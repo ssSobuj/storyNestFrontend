@@ -1,6 +1,13 @@
 "use client";
+
 import { useState } from "react";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { toast } from "react-toastify";
+import { GoogleLogin, CredentialResponse } from "@react-oauth/google";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,35 +18,78 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { BookOpen, Eye, EyeOff } from "lucide-react";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { BookOpen, Eye, EyeOff, Loader2 } from "lucide-react";
 import useAuth from "@/hooks/useAuth";
-import { GoogleLogin } from "@react-oauth/google";
+
+// 1. Define the validation schema for the login form
+const formSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email." }),
+  password: z.string().min(1, { message: "Password is required." }),
+});
+
+// Infer the TypeScript type from the schema
+type LoginFormValues = z.infer<typeof formSchema>;
 
 const LoginPage = () => {
-  const { login, loginWithGoogle, loading, error } = useAuth();
+  // 2. Use our SWR-powered auth hook
+  const { login, loginWithGoogle } = useAuth();
 
+  // 3. State is now just for UI toggles
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+
+  // 4. Initialize React Hook Form
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await login(formData?.email, formData?.password);
+  const { isSubmitting } = form.formState;
+
+  // 5. The new submit handler using validated data
+  const onSubmit = async (data: LoginFormValues) => {
+    try {
+      // The login function from your useAuth hook will handle success/redirect
+      await login(data.email, data.password);
+    } catch (err: any) {
+      // Show backend error if available, otherwise a generic one
+      toast.error(
+        err.response?.data?.error ||
+          "Login failed. Please check your credentials."
+      );
+    }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
+  // Google login handlers remain the same
+  const handleGoogleSuccess = async (
+    credentialResponse: CredentialResponse
+  ) => {
+    try {
+      await loginWithGoogle(credentialResponse);
+    } catch (err: any) {
+      toast.error(
+        err.response?.data?.error || "Google login failed. Please try again."
+      );
+    }
+  };
+
+  const handleGoogleError = () => {
+    toast.error("Google login failed. Please try again.");
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-amber-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        {/* Logo */}
         <div className="text-center">
           <Link href="/" className="inline-flex items-center space-x-2 mb-6">
             <BookOpen className="h-10 w-10 text-amber-600" />
@@ -59,103 +109,119 @@ const LoginPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Google Login section remains unchanged */}
             <div className="my-4 flex items-center">
               <div className="flex-grow border-t border-gray-300"></div>
               <span className="mx-4 flex-shrink text-gray-400">OR</span>
               <div className="flex-grow border-t border-gray-300"></div>
             </div>
-
             <div className="flex justify-center">
               <GoogleLogin
-                onSuccess={loginWithGoogle}
-                onError={() => {
-                  console.log("Login Failed");
-                  // You can also show a toast notification here
-                }}
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
                 useOneTap
               />
             </div>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <Label htmlFor="email" className="text-slate-700">
-                  Email Address
-                </Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="mt-1 border-slate-300 focus:border-amber-500 focus:ring-amber-500"
-                  placeholder="Enter your email"
-                />
-              </div>
 
-              <div>
-                <Label htmlFor="password" className="text-slate-700">
-                  Password
-                </Label>
-                <div className="relative mt-1">
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="border-slate-300 focus:border-amber-500 focus:ring-amber-500 pr-10"
-                    placeholder="Enter your password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <input
-                    id="remember-me"
-                    name="remember-me"
-                    type="checkbox"
-                    className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-slate-300 rounded"
-                  />
-                  <Label
-                    htmlFor="remember-me"
-                    className="ml-2 text-sm text-slate-600"
-                  >
-                    Remember me
-                  </Label>
-                </div>
-
-                <Link
-                  href="/forgot-password"
-                  className="text-sm text-amber-600 hover:text-amber-700 hover:underline"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full bg-amber-600 hover:bg-amber-700 text-white py-2"
+            {/* 6. Wrap the form elements */}
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
               >
-                Sign In
-              </Button>
-            </form>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700">
+                        Email Address
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter your email"
+                          type="email"
+                          {...field}
+                          className="mt-1 border-slate-300 focus:border-amber-500 focus:ring-amber-500"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-slate-700">Password</FormLabel>
+                      <FormControl>
+                        <div className="relative mt-1">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Enter your password"
+                            {...field}
+                            className="border-slate-300 focus:border-amber-500 focus:ring-amber-500 pr-10"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <input
+                      id="remember-me"
+                      name="remember-me"
+                      type="checkbox"
+                      className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-slate-300 rounded"
+                    />
+                    <Label
+                      htmlFor="remember-me"
+                      className="ml-2 text-sm text-slate-600"
+                    >
+                      Remember me
+                    </Label>
+                  </div>
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm text-amber-600 hover:text-amber-700 hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+
+                {/* 7. Update button to use form's submitting state */}
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full bg-amber-600 hover:bg-amber-700 text-white py-2"
+                >
+                  {isSubmitting && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {isSubmitting ? "Signing In..." : "Sign In"}
+                </Button>
+              </form>
+            </Form>
 
             <div className="mt-6 text-center">
               <p className="text-slate-600">
-                Don&apos;t have an account?{" "}
+                Don't have an account?{" "}
                 <Link
                   href="/register"
                   className="text-amber-600 hover:text-amber-700 font-medium hover:underline"

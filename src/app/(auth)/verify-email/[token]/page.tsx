@@ -3,9 +3,10 @@
 import { useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import useAuth from "@/hooks/useAuth"; // Adjust path if needed
+import { toast } from "react-toastify";
 
 const VerifyEmailPage = () => {
-  const { verifyEmail, loading, error, user } = useAuth();
+  const { verifyEmail, isLoading, isError, user } = useAuth();
   const params = useParams();
   const router = useRouter();
 
@@ -27,21 +28,21 @@ const VerifyEmailPage = () => {
       verifyEmail(token).catch((err) => {
         // The error is already set in the useAuth state,
         // so we can just log it here if we want.
-        console.error("Verification failed:", err);
+        toast.error("Verification failed:", err);
       });
     }
   }, [params.token, user, verifyEmail, router]);
 
   // Display different states to the user
-  if (loading) {
+  if (isLoading) {
     return <div>Verifying your email, please wait...</div>;
   }
 
-  if (error) {
+  if (isError) {
     return (
       <div>
         <h1>Verification Failed</h1>
-        <p>{error}</p>
+        {/* <p>{error}</p> */}
         <p>
           Please try to <a href="/login">log in</a> or{" "}
           <a href="/register">register</a> again.

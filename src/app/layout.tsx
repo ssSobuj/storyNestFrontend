@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import AuthProvider from "@/context/AuthProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,21 +24,21 @@ export const metadata: any = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
   return (
     <html lang="en">
-      <body
-        className={`${inter.variable} ${jetbrains_mono.variable} antialiased`}
-      >
-        <GoogleOAuthProvider clientId={googleClientId}>
-          <Navbar />
-          {children}
-          <Footer />
-        </GoogleOAuthProvider>
+      <body className={`${inter.variable} ${jetbrains_mono.variable}`}>
+        <AuthProvider>
+          <GoogleOAuthProvider clientId={googleClientId}>
+            <Navbar />
+            {children}
+            <Footer />
+          </GoogleOAuthProvider>
+        </AuthProvider>
       </body>
     </html>
   );

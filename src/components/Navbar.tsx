@@ -1,36 +1,107 @@
+// components/Navbar.tsx
+
 "use client";
+
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { BookOpen, Menu, X, User, PenTool } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import {
+  BookOpen,
+  Menu,
+  X,
+  User,
+  PenSquare,
+  LogOut,
+  Loader2,
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // For a better user menu
 import useAuth from "@/hooks/useAuth";
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
-
-  console.log(user);
+  // ==> 2. Use the context hook to get the shared auth state
+  const { user, isLoading, logout } = useAuth();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
 
   const isActive = (path: string) => pathname === path;
 
+  // A helper component for the right side of the navbar to keep the main return clean
+  const AuthButtons = () => {
+    if (isLoading) {
+      return <Loader2 className="h-6 w-6 animate-spin text-slate-400" />;
+    }
+
+    if (user) {
+      return (
+        <div className="flex items-center space-x-4">
+          <Link href="/write-story">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-amber-400 text-amber-400 hover:bg-amber-400 hover:text-slate-900"
+            >
+              <PenSquare className="h-4 w-4 mr-2" />
+              Write
+            </Button>
+          </Link>
+          <Link href="/dashboard">
+            <Avatar className="h-9 w-9 cursor-pointer">
+              {/* <AvatarImage src={user.avatarUrl || ""} alt={user.username} /> */}
+              <AvatarFallback>
+                {user.username.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={logout}
+            className="text-white hover:text-red-400 hover:bg-slate-800"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
+      );
+    }
+
+    // Logged-out user view
+    return (
+      <div className="flex items-center space-x-2">
+        <Link href="/login">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-white hover:text-amber-400 hover:bg-slate-800"
+          >
+            Sign In
+          </Button>
+        </Link>
+        <Link href="/register">
+          <Button
+            size="sm"
+            className="bg-amber-500 hover:bg-amber-600 text-slate-900"
+          >
+            Sign Up
+          </Button>
+        </Link>
+      </div>
+    );
+  };
+
   return (
     <nav className="bg-slate-900 text-white sticky top-0 z-50 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
-          >
+          <Link href="/" className="flex items-center space-x-2">
             <BookOpen className="h-8 w-8 text-amber-400" />
-            <span className="text-xl font-serif font-bold">Story Nest</span>
+            <span className="text-xl font-serif font-bold">StoryNest</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-6">
             <Link
               href="/stories"
               className={`hover:text-amber-400 transition-colors ${
@@ -38,14 +109,6 @@ const Navbar = () => {
               }`}
             >
               Stories
-            </Link>
-            <Link
-              href="/write-story"
-              className={`hover:text-amber-400 transition-colors ${
-                isActive("/write-story") ? "text-amber-400" : ""
-              }`}
-            >
-              Write Story
             </Link>
             <Link
               href="/about"
@@ -65,70 +128,17 @@ const Navbar = () => {
             </Link>
           </div>
 
-          {/* Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Link href="/dashboard">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:text-amber-400 hover:bg-slate-800"
-              >
-                <User className="h-4 w-4 mr-2" />
-                Dashboard
-              </Button>
-            </Link>
-            <Link href="/write-story">
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-amber-400 text-amber-400 hover:bg-amber-400 hover:text-slate-900"
-              >
-                <PenTool className="h-4 w-4 mr-2" />
-                Write
-              </Button>
-            </Link>
-            {user ? (
-              <>
-                <p>{user?.username}</p>
-                <Button
-                  variant="outline"
-                  onClick={logout}
-                  size="sm"
-                  className="border-amber-400 text-amber-400 hover:bg-amber-400 hover:text-slate-900"
-                >
-                  Log out
-                </Button>
-              </>
-            ) : (
-              <>
-                <Link href="/login">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="border-amber-400 text-amber-400 hover:bg-amber-400 hover:text-slate-900"
-                  >
-                    Login
-                  </Button>
-                </Link>
-                <Link href="/register">
-                  <Button
-                    size="sm"
-                    className="bg-amber-500 hover:bg-amber-600 text-slate-900"
-                  >
-                    Sign Up
-                  </Button>
-                </Link>
-              </>
-            )}
+          {/* Auth Buttons - Desktop */}
+          <div className="hidden md:flex items-center">
+            <AuthButtons />
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center">
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-white hover:text-amber-400"
             >
               {isMenuOpen ? (
                 <X className="h-6 w-6" />
@@ -138,80 +148,40 @@ const Navbar = () => {
             </Button>
           </div>
         </div>
+      </div>
 
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="md:hidden bg-slate-800 py-4 space-y-2">
+      {/* Mobile Navigation */}
+      {isMenuOpen && (
+        <div className="md:hidden bg-slate-800 absolute w-full left-0">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             <Link
               href="/stories"
-              className="block px-4 py-2 hover:bg-slate-700 transition-colors"
+              className="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-700"
               onClick={() => setIsMenuOpen(false)}
             >
               Stories
             </Link>
             <Link
-              href="/write-story"
-              className="block px-4 py-2 hover:bg-slate-700 transition-colors"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Write Story
-            </Link>
-            <Link
               href="/about"
-              className="block px-4 py-2 hover:bg-slate-700 transition-colors"
+              className="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-700"
               onClick={() => setIsMenuOpen(false)}
             >
               About
             </Link>
             <Link
               href="/contact"
-              className="block px-4 py-2 hover:bg-slate-700 transition-colors"
+              className="block px-3 py-2 rounded-md text-base font-medium hover:bg-slate-700"
               onClick={() => setIsMenuOpen(false)}
             >
               Contact
             </Link>
-            <div className="border-t border-slate-700 pt-4 px-4 space-y-2">
-              <Link href="/dashboard" onClick={() => setIsMenuOpen(false)}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="w-full justify-start text-white hover:text-amber-400"
-                >
-                  <User className="h-4 w-4 mr-2" />
-                  Dashboard
-                </Button>
-              </Link>
-              <Link href="/write-story" onClick={() => setIsMenuOpen(false)}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full border-amber-400 text-amber-400 hover:bg-amber-400 hover:text-slate-900"
-                >
-                  <PenTool className="h-4 w-4 mr-2" />
-                  Write Story
-                </Button>
-              </Link>
-              <Link href="/login" onClick={() => setIsMenuOpen(false)}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full border-amber-400 text-amber-400 hover:bg-amber-400 hover:text-slate-900"
-                >
-                  Login
-                </Button>
-              </Link>
-              <Link href="/register" onClick={() => setIsMenuOpen(false)}>
-                <Button
-                  size="sm"
-                  className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900"
-                >
-                  Sign Up
-                </Button>
-              </Link>
-            </div>
           </div>
-        )}
-      </div>
+          <div className="pt-4 pb-3 border-t border-slate-700 px-5">
+            {/* Render AuthButtons for mobile too */}
+            <AuthButtons />
+          </div>
+        </div>
+      )}
     </nav>
   );
 };
