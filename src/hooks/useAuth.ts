@@ -19,6 +19,7 @@ const fetcher = (url: string) => api.get(url).then((res) => res.data.data);
 
 export default function useAuth() {
   const router = useRouter();
+
   const {
     data: user,
     error,

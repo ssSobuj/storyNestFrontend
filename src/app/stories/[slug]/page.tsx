@@ -1,30 +1,80 @@
 // src/app/stories/[slug]/page.tsx
 
 import StoryDetail from "@/components/StoryDetail";
+import api from "@/lib/api";
+import { notFound } from "next/navigation";
 
-// 1. Define a single, shared props type
-type Props = {
-  params: { slug: string };
-  searchParams: { [key: string]: string | string[] | undefined };
-};
-
-// 2. (Optional but Recommended) Add a generateMetadata function using the shared 'Props' type
-// This function will set the page title dynamically based on the story
-export async function generateMetadata({ params }: Props): Promise<any> {
-  // In a real app, you would fetch the story title based on the slug.
-  // For now, we can create a placeholder title.
-  const slug = params.slug;
-  const storyTitle = slug
-    .replace(/-/g, " ")
-    .replace(/\b\w/g, (l) => l.toUpperCase()); // e.g., "my-story" -> "My Story"
-
-  return {
-    title: `${storyTitle} | StoryNest`,
-  };
+// Define the Story type based on your API response
+// This is crucial for type safety
+export interface IAuthor {
+  _id: string;
+  username: string;
+  profilePicture?: string; // Assuming this might exist
 }
 
-// 3. Use the shared 'Props' type for your Page component
-export default function Page({ params }: Props) {
-  // The StoryDetail component only needs the params, which is fine
-  return <StoryDetail params={params} />;
+export interface IStory {
+  _id: string;
+  title: string;
+  content: string;
+  slug: string;
+  author: IAuthor;
+  status: string;
+  coverImage: string;
+  readingTime: number;
+  category: string;
+  tags: string[];
+  avgRating: number;
+  views: number;
+  createdAt: string;
+  updatedAt: string;
+  comments: IComment[]; // Assuming your API populates this
+}
+
+export interface IComment {
+  _id: string;
+  text: string;
+  rating: number;
+  author: IAuthor;
+  createdAt: string;
+}
+
+// Re-using your Props type definition
+type Props = {
+  params: { slug: string };
+};
+
+// Fetch data on the server
+async function getStory(slug: string): Promise<IStory | null> {
+  console.log(slug);
+
+  try {
+    const res = await api.get(`/api/v1/stories/${slug}`);
+
+    return res.data.data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+// export async function generateMetadata({ params }: Props): Promise<Metadata> {
+//   const story = await getStory(params.slug);
+//   if (!story) {
+//     return { title: "Story Not Found | StoryNest" };
+//   }
+//   return {
+//     title: `${story.title} | StoryNest`,
+//     description: story.content.substring(0, 160),
+//   };
+// }
+
+export default async function Page({ params }: Props) {
+  const story = await getStory(params.slug);
+
+  if (!story) {
+    notFound(); // Triggers the not-found.tsx page
+  }
+
+  // Pass the fetched story to the client component
+  return <StoryDetail story={story} />;
 }
