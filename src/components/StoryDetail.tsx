@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Clock, ArrowLeft, Share2, Bookmark, Star } from "lucide-react";
 import Link from "next/link";
 import { IStory } from "@/app/stories/[slug]/page"; // Import the shared type
-import StoryComments from "./StoryComments.tsx";
+import StoryComments from "./StoryComments";
 
 export default function StoryDetail({ story }: { story: IStory }) {
   const [isBookmarked, setIsBookmarked] = useState(false);

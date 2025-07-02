@@ -136,7 +136,7 @@ const StoryComments = ({ storyId }: StoryCommentsProps) => {
             </div>
             <Button
               onClick={handleSubmitComment}
-              disabled={!newComment.trim() || userRating === 0 || isSubmitting}
+              disabled={!newComment?.trim() || userRating === 0 || isSubmitting}
             >
               <Send className="h-4 w-4 mr-2" />
               {isSubmitting ? "Posting..." : "Post Comment"}
@@ -158,46 +158,48 @@ const StoryComments = ({ storyId }: StoryCommentsProps) => {
       )}
 
       {/* Comments List */}
+
       <div className="space-y-4">
         <h3 className="text-xl font-semibold text-slate-900">
           Comments ({comments.length})
         </h3>
-        {comments.map((comment) => (
-          <Card key={comment._id} className="border-slate-200">
-            <CardContent className="p-6">
-              <div className="flex items-start space-x-4">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage
-                    src={comment.author.profilePicture}
-                    alt={comment.author.username}
-                  />
-                  <AvatarFallback>
-                    {comment.author.username
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <h4 className="font-semibold text-slate-900">
-                        {comment.author.username}
-                      </h4>
-                      <p className="text-sm text-slate-500">
-                        {new Date(comment.createdAt).toLocaleDateString()}
-                      </p>
+        {comments.length > 0 &&
+          comments?.map((comment) => (
+            <Card key={comment._id} className="border-slate-200">
+              <CardContent className="p-6">
+                <div className="flex items-start space-x-4">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage
+                      src={comment.author.profilePicture}
+                      alt={comment.author.username}
+                    />
+                    <AvatarFallback>
+                      {comment.author.username
+                        ?.split(" ")
+                        ?.map((n) => n[0])
+                        ?.join("")}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <h4 className="font-semibold text-slate-900">
+                          {comment.author.username}
+                        </h4>
+                        <p className="text-sm text-slate-500">
+                          {new Date(comment.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      {renderStars(comment.rating)}
                     </div>
-                    {renderStars(comment.rating)}
+                    <p className="text-slate-700 leading-relaxed">
+                      {comment.text}
+                    </p>
                   </div>
-                  <p className="text-slate-700 leading-relaxed">
-                    {comment.text}
-                  </p>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          ))}
         {comments.length === 0 && (
           <Card className="p-8 text-center">
             <p className="text-slate-500">No comments yet. Be the first!</p>
