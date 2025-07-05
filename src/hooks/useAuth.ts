@@ -23,13 +23,17 @@ export default function useAuth() {
   const {
     data: user,
     error,
-    isLoading,
+    isLoading: swrIsLoading,
     mutate,
   } = useSWR<User>("/api/v1/auth/me", fetcher, {
     // SWR options
     revalidateOnFocus: false, // Optional: disable revalidating on window focus
     shouldRetryOnError: false, // Don't retry on 401/403 errors
   });
+  const isAuthenticated = !!user && !error;
+  console.log(user);
+
+  const isLoading = swrIsLoading && !user && !error;
 
   const login = async (email: string, password: string) => {
     const { data } = await api.post("/api/v1/auth/login", { email, password });
@@ -50,11 +54,20 @@ export default function useAuth() {
   };
 
   const logout = async () => {
-    localStorage.removeItem("token");
-    // We tell SWR to clear the user data immediately (optimistic update)
-    // and not to re-fetch.
-    await mutate(undefined, false);
-    router.push("/login");
+    try {
+      // Call the backend to invalidate the refresh token cookie
+      await api.post("/api/v1/auth/logout");
+    } catch (error) {
+      console.error("Logout API call failed, but proceeding.", error);
+    } finally {
+      // Clear local state regardless of API call success
+      localStorage.removeItem("token");
+      // Tell SWR to clear user data without re-fetching
+      await mutate(undefined, { revalidate: false });
+      // Redirect to the login page
+      // Using router.replace to prevent going back to the dashboard
+      router.replace("/login");
+    }
   };
 
   // Other functions like register, forgotPassword etc. don't need to change much
@@ -88,6 +101,7 @@ export default function useAuth() {
 
   return {
     user,
+    isAuthenticated,
     isLoading,
     isError: !!error, // A boolean flag for convenience
     login,
