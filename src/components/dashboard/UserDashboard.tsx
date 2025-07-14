@@ -112,6 +112,7 @@ export default function UserDashboard() {
                   <Button
                     variant="outline"
                     size="icon"
+                    disabled={story?.status !== "approved"}
                     onClick={() => router.push(`/edit-story/${story._id}`)}
                   >
                     <Edit className="h-4 w-4" />
