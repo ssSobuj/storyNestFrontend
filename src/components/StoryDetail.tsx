@@ -12,6 +12,7 @@ import StoryComments from "./StoryComments";
 
 export default function StoryDetail({ story }: { story: IStory }) {
   const [isBookmarked, setIsBookmarked] = useState(false);
+  console.log(story);
 
   // Robustly split paragraphs
   const contentParagraphs = story.content

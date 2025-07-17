@@ -45,8 +45,6 @@ type Props = {
 
 // Fetch data on the server
 async function getStory(slug: string): Promise<IStory | null> {
-  console.log(slug);
-
   try {
     const res = await api.get(`/api/v1/stories/${slug}`);
 

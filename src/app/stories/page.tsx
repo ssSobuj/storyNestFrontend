@@ -37,7 +37,7 @@ import {
 import { useDebounce } from "@/hooks/useDebounce"; // A custom hook we'll create
 
 // Define the shape of a story from your API
-interface Story {
+export interface Story {
   _id: string;
   title: string;
   content: string; // Excerpt will be a snippet of this
@@ -47,9 +47,9 @@ interface Story {
   category: string;
   coverImage: string;
   views: number;
-  // likes and comments would come from a separate model, mocking for now
+  createdAt: string; // Add this line
   likes: number;
-  comments: number;
+  commentCount: number;
 }
 
 // Define the shape of the pagination data from your API
@@ -131,9 +131,28 @@ export default function StoriesPage() {
     updateSearchParams({ [key]: value });
   };
 
-  // Helper to render star ratings
   const renderStars = (rating: number) => {
-    /* Your existing renderStars function is perfect */
+    return (
+      <div className="flex space-x-0.5">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <Star
+            key={i}
+            className={`w-4 h-4 ${
+              i <= rating ? "fill-yellow-400 text-yellow-400" : "text-gray-300"
+            }`}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  const renderDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   return (
@@ -143,33 +162,37 @@ export default function StoriesPage() {
         <div className="text-center mb-12">{/* ... */}</div>
         {/* Search and Filters */}
         <div className="mb-8">
-          <div className="relative mb-6">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-            <Input
-              type="text"
-              placeholder="Search stories..."
-              value={filters.search}
-              onChange={(e) =>
-                setFilters((prev) => ({ ...prev, search: e.target.value }))
-              }
-              className="pl-10"
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-4 mb-6">
-            <Select
-              value={filters.sort}
-              onValueChange={(value) => handleFilterChange("sort", value)}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Newest First</SelectItem>
-                <SelectItem value="avgRating">Top Rated</SelectItem>
-                {/* Add more options as your backend supports them */}
-              </SelectContent>
-            </Select>
-            {/* Add more select filters for language, etc. here */}
+          <div className="flex items-center justify-between flex-wrap gap-4 md:gap-0">
+            {" "}
+            <div className="relative w-full md:w-auto">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 ring-0 outline-none" />
+              <Input
+                type="text"
+                placeholder="Search stories..."
+                value={filters.search}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, search: e.target.value }))
+                }
+                className="pl-10  ring-0 outline-none "
+              />
+            </div>
+            <div className="flex flex-wrap items-center gap-4 mb-6 w-full md:w-auto">
+              <Select
+                value={filters.sort}
+                onValueChange={(value) => handleFilterChange("sort", value)}
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest First</SelectItem>
+                  <SelectItem value="oldest">Oldest First</SelectItem>
+                  <SelectItem value="avgRating">Top Rated</SelectItem>
+                  {/* Add more options as your backend supports them */}
+                </SelectContent>
+              </Select>
+              {/* Add more select filters for language, etc. here */}
+            </div>
           </div>
           <div className="flex flex-wrap gap-2">
             {[
@@ -207,43 +230,59 @@ export default function StoriesPage() {
             {stories.map((story) => (
               <Card
                 key={story._id}
-                className="hover:shadow-lg transition-shadow"
+                className="border-slate-200 hover:shadow-lg transition-shadow duration-300 overflow-hidden"
               >
-                <Link href={`/stories/${story._id}`}>
-                  <div className="aspect-video bg-slate-200">
-                    <img
-                      src={story.coverImage}
-                      alt={story.title}
-                      className="w-full h-full object-cover"
-                    />
+                <div className="aspect-video bg-slate-200 overflow-hidden relative">
+                  <img
+                    src={story.coverImage}
+                    alt={story.title}
+                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
+                      {story.category}
+                    </span>
+                    {story.avgRating > 0 && renderStars(story.avgRating)}
                   </div>
-                </Link>
-                <CardHeader>
-                  <Badge
-                    variant="secondary"
-                    className="bg-amber-100 text-amber-800 w-fit"
-                  >
-                    {story.category}
-                  </Badge>
-                  <CardTitle className="pt-2 hover:text-amber-600">
+
+                  <CardTitle className="text-xl font-serif hover:text-amber-600 transition-colors line-clamp-2">
                     <Link href={`/stories/${story._id}`}>{story.title}</Link>
                   </CardTitle>
-                  <CardDescription>by {story.author.username}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-slate-600 line-clamp-3 mb-4">
+                  <CardDescription className="text-slate-600 leading-relaxed line-clamp-3">
                     {story.content}
-                  </p>
-                  <div className="flex items-center justify-between text-sm text-slate-500">
-                    <div className="flex items-center">
-                      <User className="h-4 w-4 mr-1" />
-                      <span>{story.author.username}</span>
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  <div className="flex flex-col space-y-2 text-sm text-slate-500 mb-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-1">
+                        <User className="h-4 w-4" />
+                        <span>{story.author.username}</span>
+                      </div>
+                      <div className="text-xs text-slate-400">
+                        {renderDate(story.createdAt)}
+                      </div>
                     </div>
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 mr-1" />
-                      <span>{story.readingTime} min read</span>
+                    <div className="flex items-center space-x-4 justify-between">
+                      <div className="flex items-center space-x-1">
+                        <Clock className="h-4 w-4" />
+                        <span>{story.readingTime} min read</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <MessageSquare className="h-4 w-4" />
+                        <span>{story?.commentCount || 0} comments</span>
+                      </div>
                     </div>
                   </div>
+
+                  <Link href={`/stories/${story._id}`}>
+                    <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white">
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      Read Story
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             ))}

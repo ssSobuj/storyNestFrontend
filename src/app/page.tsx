@@ -1,3 +1,4 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,8 +18,32 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
+import { Story } from "./stories/page";
+import { useEffect, useState } from "react";
+import api from "@/lib/api";
+import useAuth from "@/hooks/useAuth";
 
 const Home = () => {
+  const { user } = useAuth();
+  const [stories, setStories] = useState<Story[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStories = async () => {
+      setLoading(true);
+      try {
+        const res = await api.get(`/api/v1/stories?sort=avgRating`);
+        setStories(res.data.data);
+      } catch (error) {
+        console.error("Failed to fetch stories", error);
+        // Add toast notification for error
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStories();
+  }, []);
+
   const features = [
     {
       icon: <PenTool className="h-8 w-8 text-amber-500" />,
@@ -42,45 +67,6 @@ const Home = () => {
       title: "Engage",
       description:
         "Like, comment, and follow your favorite authors and stories.",
-    },
-  ];
-
-  const topRatedStories = [
-    {
-      id: 1,
-      title: "The Midnight Garden",
-      excerpt:
-        "In a world where flowers bloom only under moonlight, a young botanist discovers the secret that could change everything...",
-      author: "Emma Thompson",
-      readTime: "12 min read",
-      rating: 4.8,
-      genre: "Fantasy",
-      coverImage:
-        "https://images.unsplash.com/photo-1721322800607-8c38375eef04?w=400&h=300&fit=crop",
-    },
-    {
-      id: 3,
-      title: "Letters from Tomorrow",
-      excerpt:
-        "A mysterious post office that delivers mail from the future becomes the center of one woman's quest for answers...",
-      author: "Sarah Martinez",
-      readTime: "15 min read",
-      rating: 4.9,
-      genre: "Mystery",
-      coverImage:
-        "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=400&h=300&fit=crop",
-    },
-    {
-      id: 5,
-      title: "ছায়ার সাথে নাচ",
-      excerpt:
-        "একজন ব্যালে নর্তকী আবিষ্কার করেন যে তার ছায়ার নিজস্ব মন রয়েছে, যা আত্মআবিষ্কারের যাত্রার দিকে নিয়ে যায়...",
-      author: "ফাতিমা খান",
-      readTime: "১০ মিনিট পড়া",
-      rating: 4.7,
-      genre: "Drama",
-      coverImage:
-        "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?w=400&h=300&fit=crop",
     },
   ];
 
@@ -141,7 +127,7 @@ const Home = () => {
               worlds, and connect with fellow literature enthusiasts.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/register">
+              <Link href={user ? "/write-story" : "/register"}>
                 <Button
                   size="lg"
                   className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg"
@@ -150,7 +136,7 @@ const Home = () => {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link href="/stories">
+              <Link href={user ? "/stories" : "/register"}>
                 <Button
                   variant="outline"
                   size="lg"
@@ -178,9 +164,9 @@ const Home = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {topRatedStories.map((story, index) => (
+            {stories?.slice(0, 3)?.map((story) => (
               <Card
-                key={story.id}
+                key={story._id}
                 className="border-slate-200 hover:shadow-lg transition-shadow duration-300 overflow-hidden"
               >
                 <div className="aspect-video bg-slate-200 overflow-hidden relative">
@@ -189,38 +175,40 @@ const Home = () => {
                     alt={story.title}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                   />
-                  <div className="absolute top-3 left-3 bg-amber-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
-                    #{index + 1} Top Rated
-                  </div>
+                  {/* Optional Top Badge - If you want to mark Top Rated, Trending, etc. */}
+                  {/* <div className="absolute top-3 left-3 bg-amber-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+              #1 Trending
+            </div> */}
                 </div>
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
-                      {story.genre}
+                      {story.category}
                     </span>
-                    {renderStars(story.rating)}
+                    {/* Optionally show avgRating or stars if available */}
+                    {story.avgRating > 0 && renderStars(story.avgRating)}
                   </div>
 
                   <CardTitle className="text-xl font-serif hover:text-amber-600 transition-colors line-clamp-2">
-                    <Link href={`/stories/${story.id}`}>{story.title}</Link>
+                    <Link href={`/stories/${story._id}`}>{story.title}</Link>
                   </CardTitle>
                   <CardDescription className="text-slate-600 leading-relaxed line-clamp-3">
-                    {story.excerpt}
+                    {story.content}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-0">
                   <div className="flex items-center justify-between text-sm text-slate-500 mb-4">
                     <div className="flex items-center space-x-1">
                       <User className="h-4 w-4" />
-                      <span>{story.author}</span>
+                      <span>{story.author.username}</span>
                     </div>
                     <div className="flex items-center space-x-1">
                       <Clock className="h-4 w-4" />
-                      <span>{story.readTime}</span>
+                      <span>{story.readingTime} min read</span>
                     </div>
                   </div>
 
-                  <Link href={`/stories/${story.id}`}>
+                  <Link href={`/stories/${story._id}`}>
                     <Button className="w-full bg-amber-600 hover:bg-amber-700 text-white">
                       <BookOpen className="h-4 w-4 mr-2" />
                       Read Story
@@ -232,7 +220,7 @@ const Home = () => {
           </div>
 
           <div className="text-center">
-            <Link href="/stories">
+            <Link href="/stories?sort=avgRating">
               <Button
                 size="lg"
                 variant="outline"
