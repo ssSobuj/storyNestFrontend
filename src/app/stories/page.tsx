@@ -122,7 +122,7 @@ export default function StoriesPage() {
       }
     };
     fetchStories();
-  }, [debouncedSearchTerm, filters.sort, filters.category]); // Dependencies that trigger a refetch
+  }, [debouncedSearchTerm, filters.sort, filters.category]);
 
   // Handlers to update state and trigger URL change
   const handleFilterChange = (key: keyof typeof filters, value: string) => {

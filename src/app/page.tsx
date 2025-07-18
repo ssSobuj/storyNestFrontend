@@ -22,27 +22,11 @@ import { Story } from "./stories/page";
 import { useEffect, useState } from "react";
 import api from "@/lib/api";
 import useAuth from "@/hooks/useAuth";
+import { useSwrFetcher } from "@/hooks/useSwrFetcher";
 
 const Home = () => {
   const { user } = useAuth();
-  const [stories, setStories] = useState<Story[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchStories = async () => {
-      setLoading(true);
-      try {
-        const res = await api.get(`/api/v1/stories?sort=top-rated`);
-        setStories(res.data.data);
-      } catch (error) {
-        console.error("Failed to fetch stories", error);
-        // Add toast notification for error
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStories();
-  }, []);
+  const { data } = useSwrFetcher(`/api/v1/stories?sort=top-rated`);
 
   const features = [
     {
@@ -105,7 +89,6 @@ const Home = () => {
             }`}
           />
         ))}
-        <span className="text-sm text-slate-600 ml-1">{rating}</span>
       </div>
     );
   };
@@ -164,7 +147,7 @@ const Home = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-            {stories?.slice(0, 3)?.map((story) => (
+            {data?.data?.slice(0, 3)?.map((story: Story) => (
               <Card
                 key={story._id}
                 className="border-slate-200 hover:shadow-lg transition-shadow duration-300 overflow-hidden"
@@ -185,7 +168,6 @@ const Home = () => {
                     <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
                       {story.category}
                     </span>
-                    {/* Optionally show avgRating or stars if available */}
                     {story.avgRating > 0 && renderStars(story.avgRating)}
                   </div>
 
