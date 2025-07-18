@@ -32,7 +32,7 @@ const Home = () => {
     const fetchStories = async () => {
       setLoading(true);
       try {
-        const res = await api.get(`/api/v1/stories?sort=avgRating`);
+        const res = await api.get(`/api/v1/stories?sort=top-rated`);
         setStories(res.data.data);
       } catch (error) {
         console.error("Failed to fetch stories", error);

@@ -187,7 +187,7 @@ export default function StoriesPage() {
                 <SelectContent>
                   <SelectItem value="newest">Newest First</SelectItem>
                   <SelectItem value="oldest">Oldest First</SelectItem>
-                  <SelectItem value="avgRating">Top Rated</SelectItem>
+                  <SelectItem value="top-rated">Top Rated</SelectItem>
                   {/* Add more options as your backend supports them */}
                 </SelectContent>
               </Select>
