@@ -220,7 +220,7 @@ const Home = () => {
           </div>
 
           <div className="text-center">
-            <Link href="/stories?sort=avgRating">
+            <Link href="/stories?sort=top-rated">
               <Button
                 size="lg"
                 variant="outline"
@@ -327,7 +327,7 @@ const Home = () => {
             matters, and we can&apos;t wait to read it.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/register">
+            <Link href={user ? "/dashboard" : "/register"}>
               <Button
                 size="lg"
                 className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg"
@@ -335,7 +335,7 @@ const Home = () => {
                 Join StoryVerse Today
               </Button>
             </Link>
-            <Link href="/login">
+            <Link href={user ? "/dashboard" : "/login"}>
               <Button
                 variant="outline"
                 size="lg"
