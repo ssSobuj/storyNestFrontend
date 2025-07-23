@@ -3,8 +3,16 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { BookOpen, PenSquare, User, Shield, LogOut } from "lucide-react";
+import { usePathname } from "next/navigation";
+import {
+  BookOpen,
+  PenSquare,
+  User,
+  Shield,
+  LogOut,
+  Edit3,
+  Book,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -24,11 +32,16 @@ export default function DashboardLayout({
 
   const navLinks = [
     { name: "Dashboard", href: "/dashboard", icon: BookOpen },
-    { name: "Write Story", href: "/write-story", icon: PenSquare },
+    { name: "Write Story", href: "/write-story", icon: Edit3 },
+    { name: "Edit Story", href: "/profile", icon: PenSquare },
     { name: "Profile", href: "/profile", icon: User },
     // Conditionally add the admin link
     ...(user?.role === "admin"
-      ? [{ name: "Admin Panel", href: "/admin", icon: Shield }]
+      ? [
+          { name: "My Stories", href: "/admin-stories", icon: BookOpen },
+          { name: "All Stories", href: "/all-stories", icon: Book },
+          { name: "Admin Panel", href: "/admin", icon: Shield },
+        ]
       : []),
   ];
 

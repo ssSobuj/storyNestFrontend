@@ -6,15 +6,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import {
-  BookOpen,
-  Menu,
-  X,
-  User,
-  PenSquare,
-  LogOut,
-  Loader2,
-} from "lucide-react";
+import { BookOpen, Menu, X, User, Edit3, LogOut, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"; // For a better user menu
 import useAuth from "@/hooks/useAuth";
 
@@ -43,17 +35,24 @@ const Navbar = () => {
               size="sm"
               className="border-amber-400 text-amber-400 hover:bg-amber-400 hover:text-slate-900"
             >
-              <PenSquare className="h-4 w-4 mr-2" />
+              <Edit3 className="h-4 w-4 mr-2" />
               Write
             </Button>
           </Link>
           <Link href="/dashboard">
-            <Avatar className="h-9 w-9 cursor-pointer">
-              {/* <AvatarImage src={user.avatarUrl || ""} alt={user.username} /> */}
+            {/* <Avatar className="h-9 w-9 cursor-pointer">
+              <AvatarImage src={user.avatarUrl || ""} alt={user.username} />
               <AvatarFallback>
                 {user.username.charAt(0).toUpperCase()}
               </AvatarFallback>
-            </Avatar>
+            </Avatar> */}
+
+            <Button
+              className="bg-amber-600 hover:bg-amber-700 text-white"
+              size="sm"
+            >
+              Dashboard
+            </Button>
           </Link>
           <Button
             variant="ghost"

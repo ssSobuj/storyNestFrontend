@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/table";
 import { Loader2, ShieldAlert, UserX, UserCheck } from "lucide-react";
 import { toast } from "react-toastify";
+import { useSwrFetcher } from "@/hooks/useSwrFetcher";
 
 // Define the User type for the admin view
 interface UserForAdmin {
@@ -33,12 +34,12 @@ interface UserForAdmin {
   role: "user" | "admin";
   isVerified: boolean;
   createdAt: string;
+  id: string;
 }
 
 export default function AdminPage() {
-  const { user, isLoading } = useAuth();
-  const [users, setUsers] = useState<UserForAdmin[]>([]);
-  const [pageLoading, setPageLoading] = useState(true);
+  const { user } = useAuth();
+  const { data, isLoading } = useSwrFetcher(`/api/v1/auth/users`);
 
   // Placeholder for role change functionality
   const handleRoleChange = (userId: string, newRole: "user" | "admin") => {
@@ -48,7 +49,9 @@ export default function AdminPage() {
     // await api.put(`/api/v1/users/${userId}/role`, { role: newRole });
   };
 
-  if (isLoading || pageLoading) {
+  if (!data) return null;
+
+  if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -98,7 +101,7 @@ export default function AdminPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((u) => (
+              {data?.data?.map((u: UserForAdmin) => (
                 <TableRow key={u._id}>
                   <TableCell className="font-medium">{u.username}</TableCell>
                   <TableCell>{u.email}</TableCell>

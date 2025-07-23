@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit, Trash2, Eye, Loader2 } from "lucide-react";
+import { Plus, Trash2, Eye, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import { useSwrFetcher } from "@/hooks/useSwrFetcher";
@@ -28,8 +28,9 @@ interface Story {
   views: number;
 }
 
-export default function UserDashboard() {
-  const { data, isLoading, mutate } = useSwrFetcher(`/api/v1/stories/me`);
+export default function AllStories() {
+  const { data, isLoading, mutate } = useSwrFetcher(`/api/v1/stories`);
+
   const router = useRouter();
 
   const handleDelete = async (storyId: string) => {
@@ -116,14 +117,6 @@ export default function UserDashboard() {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    disabled={story?.status !== "approved"}
-                    onClick={() => router.push(`/edit-story/${story._id}`)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
                   <Button
                     variant="destructive"
                     size="icon"
