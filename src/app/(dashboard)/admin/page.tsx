@@ -2,9 +2,11 @@
 
 "use client";
 
-import useAuth from "@/hooks/useAuth";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useAuthContext } from "@/context/AuthProvider";
+import { useSwrFetcher } from "@/hooks/useSwrFetcher"; // <-- 1. Use your specific hook
+import api from "@/lib/api"; // <-- And your axios instance for mutations
+
 import {
   Card,
   CardHeader,
@@ -22,34 +24,48 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2, ShieldAlert, UserX, UserCheck } from "lucide-react";
+import { Loader2, ShieldAlert, Trash2 } from "lucide-react";
 import { toast } from "react-toastify";
-import { useSwrFetcher } from "@/hooks/useSwrFetcher";
 
-// Define the User type for the admin view
 interface UserForAdmin {
   _id: string;
   username: string;
   email: string;
-  role: "user" | "admin";
+  role: "user" | "admin" | "super-admin";
   isVerified: boolean;
   createdAt: string;
-  id: string;
 }
 
 export default function AdminPage() {
-  const { user } = useAuth();
-  const { data, isLoading } = useSwrFetcher(`/api/v1/auth/users`);
+  const { user: currentUser } = useAuthContext();
 
-  // Placeholder for role change functionality
-  const handleRoleChange = (userId: string, newRole: "user" | "admin") => {
-    console.log(`Change user ${userId} to role ${newRole}`);
-    toast.info("Role change functionality is not yet implemented.");
-    // Example API call:
-    // await api.put(`/api/v1/users/${userId}/role`, { role: newRole });
+  // 2. Fetch data using your hook
+  const { data, isLoading, mutate } = useSwrFetcher(`/api/v1/auth/users`);
+
+  const [loadingUserId, setLoadingUserId] = useState<string | null>(null);
+
+  const handleDeleteUser = async (userId: string, username: string) => {
+    if (
+      !window.confirm(`Are you sure you want to delete the user: ${username}?`)
+    ) {
+      return;
+    }
+
+    setLoadingUserId(userId);
+
+    try {
+      // 3. Perform the mutation using the 'api' instance
+      await api.delete(`/api/v1/auth/users/${userId}`);
+      toast.success("User deleted successfully.");
+
+      // 4. Trigger a re-fetch using 'mutate' from your hook
+      mutate();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to delete user.");
+    } finally {
+      setLoadingUserId(null);
+    }
   };
-
-  if (!data) return null;
 
   if (isLoading) {
     return (
@@ -59,8 +75,7 @@ export default function AdminPage() {
     );
   }
 
-  if (user?.role !== "admin") {
-    // This is a fallback in case the redirect is slow
+  if (!currentUser || !["admin", "super-admin"].includes(currentUser.role)) {
     return (
       <div className="text-center">
         <ShieldAlert className="mx-auto h-12 w-12 text-red-500" />
@@ -72,6 +87,7 @@ export default function AdminPage() {
     );
   }
 
+  // The JSX remains exactly the same
   return (
     <div className="space-y-8">
       <div>
@@ -80,7 +96,6 @@ export default function AdminPage() {
           Manage users and content across the platform.
         </p>
       </div>
-
       <Card>
         <CardHeader>
           <CardTitle>User Management</CardTitle>
@@ -107,7 +122,13 @@ export default function AdminPage() {
                   <TableCell>{u.email}</TableCell>
                   <TableCell>
                     <Badge
-                      variant={u.role === "admin" ? "default" : "secondary"}
+                      variant={
+                        u.role === "admin"
+                          ? "default"
+                          : u.role === "super-admin"
+                          ? "destructive"
+                          : "secondary"
+                      }
                     >
                       {u.role}
                     </Badge>
@@ -128,23 +149,23 @@ export default function AdminPage() {
                     {new Date(u.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="text-right space-x-2">
-                    {u.role === "user" ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleRoleChange(u._id, "admin")}
-                      >
-                        <UserCheck className="h-4 w-4 mr-2" /> Make Admin
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleRoleChange(u._id, "user")}
-                      >
-                        <UserX className="h-4 w-4 mr-2" /> Remove Admin
-                      </Button>
-                    )}
+                    {u.role !== "super-admin" &&
+                      currentUser.email !== u.email && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteUser(u._id, u.username)}
+                          disabled={loadingUserId === u._id}
+                        >
+                          {loadingUserId === u._id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              <Trash2 className="h-4 w-4 " />
+                            </>
+                          )}
+                        </Button>
+                      )}
                   </TableCell>
                 </TableRow>
               ))}

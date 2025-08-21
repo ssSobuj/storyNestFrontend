@@ -18,7 +18,7 @@ export default function DashboardPage() {
     );
   }
 
-  if (user?.role !== "admin") {
+  if (user?.role !== "admin" && user?.role !== "super-admin") {
     // This is a fallback in case the redirect is slow
     return (
       <div className="text-center">

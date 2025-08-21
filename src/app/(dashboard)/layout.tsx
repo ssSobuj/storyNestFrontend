@@ -209,16 +209,24 @@ export default function DashboardLayout({
   const navLinks = [
     { name: "Dashboard", href: "/dashboard", icon: BookOpen },
     { name: "Write Story", href: "/write-story", icon: Edit3 },
-    // { name: "Edit Story", href: "/edit-story", icon: PenSquare },
     { name: "Profile", href: "/profile", icon: User },
-    ...(user?.role === "admin"
-      ? [
-          { name: "My Stories", href: "/admin-stories", icon: BookOpen },
-          { name: "All Stories", href: "/all-stories", icon: Book },
-          { name: "Admin Panel", href: "/admin", icon: Shield },
-        ]
-      : []),
   ];
+
+  // Add links if the user is an ADMIN or SUPER-ADMIN
+  if (user && ["admin", "super-admin"].includes(user.role)) {
+    navLinks.push(
+      { name: "My Stories", href: "/admin-stories", icon: BookOpen },
+      { name: "All Stories", href: "/all-stories", icon: Book },
+      { name: "Admin Panel", href: "/admin", icon: Shield } // Both roles can see this
+    );
+  }
+
+  // Add links ONLY if the user is a SUPER-ADMIN
+  if (user?.role === "super-admin") {
+    // We can either create a new link or replace the "Admin Panel" link
+    // Let's create a new, distinct one for clarity.
+    navLinks.push({ name: "Super Admin", href: "/super-admin", icon: Shield });
+  }
 
   // Close the mobile menu automatically when the user navigates
   useEffect(() => {

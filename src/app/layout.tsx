@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import AuthProvider from "@/context/AuthProvider";
+import { ToastContainer } from "react-toastify";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -36,6 +37,7 @@ export default function RootLayout({
           <GoogleOAuthProvider clientId={googleClientId}>
             <Navbar />
             {children}
+            <ToastContainer autoClose={3000} />
             <Footer />
           </GoogleOAuthProvider>
         </AuthProvider>

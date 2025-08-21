@@ -56,8 +56,12 @@ export default function AdminDashboard() {
       await api.put(`/api/v1/stories/${storyId}/status`, { status: newStatus });
       setStories((prev) => prev.filter((story) => story._id !== storyId));
       toast.success(`Story has been ${newStatus}.`);
-    } catch (error) {
-      toast.error("Failed to update story status.");
+    } catch (error: any) {
+      console.log(error);
+
+      toast.error(
+        error?.response.data.error || "Failed to update story status."
+      );
     }
   };
 
