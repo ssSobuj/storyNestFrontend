@@ -1,5 +1,3 @@
-// // app/(dashboard)/layout.tsx
-
 // "use client";
 
 // import Link from "next/link";
@@ -12,13 +10,14 @@
 //   LogOut,
 //   Edit3,
 //   Book,
+//   Menu, // Icon for the Floating Action Button
+//   X, // The new CLOSE ICON
 // } from "lucide-react";
 // import { Button } from "@/components/ui/button";
-
 // import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 // import { useAuthContext } from "@/context/AuthProvider";
 // import AuthGuard from "@/components/auth/AuthGuard";
-// import { useState } from "react";
+// import { useState, useEffect } from "react";
 
 // // This is the main layout for any page inside the (dashboard) group
 // export default function DashboardLayout({
@@ -28,29 +27,43 @@
 // }) {
 //   const { user, logout } = useAuthContext();
 //   const pathname = usePathname();
-//   const [isMenuOpen, setIsMenuOpen] = useState(false);
+//   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
 //   const navLinks = [
 //     { name: "Dashboard", href: "/dashboard", icon: BookOpen },
 //     { name: "Write Story", href: "/write-story", icon: Edit3 },
-//     { name: "Edit Story", href: "/profile", icon: PenSquare },
 //     { name: "Profile", href: "/profile", icon: User },
-//     // Conditionally add the admin link
-//     ...(user?.role === "admin"
-//       ? [
-//           { name: "My Stories", href: "/admin-stories", icon: BookOpen },
-//           { name: "All Stories", href: "/all-stories", icon: Book },
-//           { name: "Admin Panel", href: "/admin", icon: Shield },
-//         ]
-//       : []),
 //   ];
 
-//   const userMobileLinks = [{ name: "Profile", href: "/profile", icon: User }];
+//   // Add links if the user is an ADMIN or SUPER-ADMIN
+//   if (user && ["admin", "super-admin"].includes(user.role)) {
+//     navLinks.push(
+//       { name: "My Stories", href: "/admin-stories", icon: BookOpen },
+//       { name: "All Stories", href: "/all-stories", icon: Book },
+//       { name: "Admin Panel", href: "/admin", icon: Shield } // Both roles can see this
+//     );
+//   }
+
+//   // Add links ONLY if the user is a SUPER-ADMIN
+//   if (user?.role === "super-admin") {
+//     // We can either create a new link or replace the "Admin Panel" link
+//     // Let's create a new, distinct one for clarity.
+//     navLinks.push({ name: "Super Admin", href: "/super-admin", icon: Shield });
+//   }
+
+//   // Close the mobile menu automatically when the user navigates
+//   useEffect(() => {
+//     if (isMobileMenuOpen) {
+//       setIsMobileMenuOpen(false);
+//     }
+//   }, [pathname]);
+
 //   return (
 //     <AuthGuard>
 //       <div className="flex min-h-screen bg-slate-50">
-//         <aside className="hidden md:flex w-64 flex-shrink-0 border-r border-slate-200 bg-white p-6 flex-col">
-//           <div className="text-2xl font-bold font-serif text-slate-900 mb-10">
+//         {/* DESKTOP SIDEBAR */}
+//         <aside className="hidden lg:flex w-64 flex-shrink-0 flex-col border-r border-slate-200 bg-white p-6">
+//           <div className="mb-10 text-2xl font-bold font-serif text-slate-900">
 //             StoryNest
 //           </div>
 //           <nav className="flex flex-col space-y-2">
@@ -61,15 +74,13 @@
 //                   className="w-full justify-start text-sm"
 //                 >
 //                   <link.icon className="mr-3 h-4 w-4" />
-//                   {/* Show full name on desktop */}
-//                   {link.name === "Write" ? "Write Story" : link.name}
-//                   {link.name === "Admin" ? " Panel" : ""}
+//                   {link.name}
 //                 </Button>
 //               </Link>
 //             ))}
 //           </nav>
 //           <div className="mt-auto">
-//             <div className="flex items-center space-x-3 mb-4">
+//             <div className="mb-4 flex items-center space-x-3">
 //               <Avatar>
 //                 <AvatarFallback>
 //                   {user?.username.charAt(0).toUpperCase()}
@@ -87,89 +98,109 @@
 //           </div>
 //         </aside>
 
-//         {/* ======================================================================= */}
-//         {/* MAIN CONTENT AREA & MOBILE HEADER                                     */}
-//         {/* ======================================================================= */}
+//         {/* MAIN CONTENT AREA */}
 //         <div className="flex-1 flex flex-col">
-//           {/* Mobile Header - Visible on mobile, hidden on medium screens and up */}
-//           <header className="md:hidden sticky top-0 flex items-center justify-between p-4 bg-white border-b z-10">
-//             <Link href="/dashboard">
-//               <span className="text-xl font-bold font-serif text-slate-900">
-//                 StoryNest
-//               </span>
-//             </Link>
-
-//             {/* User Avatar and Dropdown Menu Trigger */}
-//             <div className="relative">
-//               <button onClick={() => setIsMenuOpen(!isMenuOpen)}>
-//                 <Avatar className="h-9 w-9">
-//                   <AvatarFallback>
-//                     {user?.username.charAt(0).toUpperCase()}
-//                   </AvatarFallback>
-//                 </Avatar>
-//               </button>
-
-//               {/* Dropdown Menu for Mobile */}
-//               {isMenuOpen && (
-//                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 border">
-//                   <div className="px-4 py-2 border-b">
-//                     <p className="font-semibold text-sm truncate">
-//                       {user?.username}
-//                     </p>
-//                     <p className="text-xs text-slate-500 truncate">
-//                       {user?.email}
-//                     </p>
-//                   </div>
-//                   {userMobileLinks.map((link) => (
-//                     <Link
-//                       key={link.href}
-//                       href={link.href}
-//                       onClick={() => setIsMenuOpen(false)}
-//                     >
-//                       <div className="flex items-center w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">
-//                         <link.icon className="mr-3 h-4 w-4" />
-//                         {link.name}
-//                       </div>
-//                     </Link>
-//                   ))}
-//                   <button
-//                     onClick={() => {
-//                       logout();
-//                       setIsMenuOpen(false);
-//                     }}
-//                     className="flex items-center w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-100"
-//                   >
-//                     <LogOut className="mr-3 h-4 w-4" />
-//                     Sign Out
-//                   </button>
-//                 </div>
-//               )}
-//             </div>
-//           </header>
-
-//           {/* Main Content */}
-//           <main className="flex-1 p-4 md:p-8 overflow-auto pb-20 md:pb-8">
+//           <main className="flex-1 overflow-auto p-4 pb-24 md:p-8 md:pb-8">
 //             {children}
 //           </main>
 //         </div>
 
 //         {/* ======================================================================= */}
-//         {/* MOBILE BOTTOM NAV - Visible on mobile, hidden on medium and up          */}
+//         {/* MOBILE NAVIGATION - DRAWER AND FLOATING ACTION BUTTON (FAB)           */}
 //         {/* ======================================================================= */}
-//         <nav className="md:hidden fixed bottom-0 left-0 right-0 flex justify-around items-center bg-white border-t p-2 z-10">
-//           {navLinks.map((link) => (
-//             <Link key={link.name} href={link.href}>
-//               <div
-//                 className={`flex flex-col items-center p-2 rounded-md ${
-//                   pathname === link.href ? "text-blue-600" : "text-slate-500"
-//                 }`}
+
+//         {/* FLOATING ACTION BUTTON (FAB) */}
+//         <div className="fixed bottom-6 right-6 z-30 lg:hidden">
+//           <Button
+//             onClick={() => setIsMobileMenuOpen(true)}
+//             size="icon"
+//             className="h-14 w-14 rounded-full bg-amber-600 hover:bg-amber-700 shadow-lg"
+//           >
+//             <Menu className="h-6 w-6 text-white" />
+//           </Button>
+//         </div>
+
+//         {/* DRAWER AND OVERLAY CONTAINER */}
+//         <div
+//           className={`fixed inset-0 z-40 lg:hidden ${
+//             isMobileMenuOpen ? "pointer-events-auto" : "pointer-events-none"
+//           }`}
+//         >
+//           {/* OVERLAY with fade transition */}
+//           <div
+//             className={`fixed inset-0 bg-black transition-opacity duration-300 ease-in-out ${
+//               isMobileMenuOpen ? "opacity-50" : "opacity-0"
+//             }`}
+//             onClick={() => setIsMobileMenuOpen(false)}
+//           ></div>
+
+//           {/* DRAWER with slide transition */}
+//           <div
+//             className={`relative flex h-full w-64 flex-col bg-white p-6 pt-20 shadow-xl transition-transform duration-300 ease-in-out ${
+//               isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+//             }`}
+//           >
+//             {/* 1. HEADER WITH TITLE AND THE NEW CLOSE ICON */}
+//             <div className="mb-10 flex items-center justify-between">
+//               <span className="text-2xl font-bold font-serif text-slate-900">
+//                 StoryNest
+//               </span>
+//               {/* This is the new close button */}
+//               <Button
+//                 variant="ghost"
+//                 size="icon"
+//                 onClick={() => setIsMobileMenuOpen(false)}
 //               >
-//                 <link.icon className="h-5 w-5 mb-1" />
-//                 <span className="text-xs font-medium">{link.name}</span>
+//                 <X className="h-6 w-6 text-slate-500" />
+//               </Button>
+//             </div>
+
+//             {/* Navigation links */}
+//             <nav className="flex flex-col space-y-2">
+//               {navLinks.map((link) => (
+//                 <Link key={link.name} href={link.href}>
+//                   <Button
+//                     variant={pathname === link.href ? "secondary" : "ghost"}
+//                     className="w-full justify-start text-sm"
+//                   >
+//                     <link.icon className="mr-3 h-4 w-4 flex-shrink-0" />
+//                     <span>{link.name}</span>
+//                   </Button>
+//                 </Link>
+//               ))}
+//             </nav>
+
+//             {/* User Info and Sign Out */}
+//             <div className="mt-auto">
+//               <div className="mb-4 flex items-center space-x-3">
+//                 <Avatar>
+//                   <AvatarFallback>
+//                     {user?.username.charAt(0).toUpperCase()}
+//                   </AvatarFallback>
+//                 </Avatar>
+//                 <div>
+//                   <p className="font-semibold text-sm truncate">
+//                     {user?.username}
+//                   </p>
+//                   <p className="text-xs text-slate-500 truncate">
+//                     {user?.email}
+//                   </p>
+//                 </div>
 //               </div>
-//             </Link>
-//           ))}
-//         </nav>
+//               <Button
+//                 variant="outline"
+//                 className="w-full"
+//                 onClick={() => {
+//                   logout();
+//                   setIsMobileMenuOpen(false);
+//                 }}
+//               >
+//                 <LogOut className="mr-2 h-4 w-4" />
+//                 Sign Out
+//               </Button>
+//             </div>
+//           </div>
+//         </div>
 //       </div>
 //     </AuthGuard>
 //   );
@@ -187,8 +218,8 @@ import {
   LogOut,
   Edit3,
   Book,
-  Menu, // Icon for the Floating Action Button
-  X, // The new CLOSE ICON
+  Menu, // The Menu icon for the new header
+  X, // The Close icon for the drawer
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -217,14 +248,12 @@ export default function DashboardLayout({
     navLinks.push(
       { name: "My Stories", href: "/admin-stories", icon: BookOpen },
       { name: "All Stories", href: "/all-stories", icon: Book },
-      { name: "Admin Panel", href: "/admin", icon: Shield } // Both roles can see this
+      { name: "Admin Panel", href: "/admin", icon: Shield }
     );
   }
 
   // Add links ONLY if the user is a SUPER-ADMIN
   if (user?.role === "super-admin") {
-    // We can either create a new link or replace the "Admin Panel" link
-    // Let's create a new, distinct one for clarity.
     navLinks.push({ name: "Super Admin", href: "/super-admin", icon: Shield });
   }
 
@@ -238,7 +267,7 @@ export default function DashboardLayout({
   return (
     <AuthGuard>
       <div className="flex min-h-screen bg-slate-50">
-        {/* DESKTOP SIDEBAR */}
+        {/* DESKTOP SIDEBAR (No changes here) */}
         <aside className="hidden lg:flex w-64 flex-shrink-0 flex-col border-r border-slate-200 bg-white p-6">
           <div className="mb-10 text-2xl font-bold font-serif text-slate-900">
             StoryNest
@@ -277,27 +306,56 @@ export default function DashboardLayout({
 
         {/* MAIN CONTENT AREA */}
         <div className="flex-1 flex flex-col">
-          <main className="flex-1 overflow-auto p-4 pb-24 md:p-8 md:pb-8">
-            {children}
-          </main>
+          {/* ======================================================================= */}
+          {/* --- CHANGE START: 1. NEW MOBILE HEADER ADDED ---                        */}
+          {/* This header is visible only on small screens (lg:hidden) and contains   */}
+          {/* the menu button, app title, and user avatar. It replaces the old FAB.   */}
+          {/* ======================================================================= */}
+          <header className="lg:hidden sticky top-0 z-20 flex items-center justify-between border-b bg-white p-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <Menu className="h-6 w-6" />
+            </Button>
+            <div className="text-xl font-bold font-serif text-slate-900">
+              StoryNest
+            </div>
+            <Link href="/profile">
+              <Avatar className="h-9 w-9">
+                <AvatarFallback>
+                  {user?.username.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
+          </header>
+          {/* --- CHANGE END: 1. NEW MOBILE HEADER ADDED --- */}
+
+          {/* --- CHANGE START: 2. MAIN PADDING ADJUSTED --- */}
+          {/* The large bottom padding (pb-24) is no longer needed since the FAB    */}
+          {/* at the bottom has been removed.                                       */}
+          <main className="flex-1 overflow-auto p-4 md:p-8">{children}</main>
+          {/* --- CHANGE END: 2. MAIN PADDING ADJUSTED --- */}
         </div>
 
         {/* ======================================================================= */}
-        {/* MOBILE NAVIGATION - DRAWER AND FLOATING ACTION BUTTON (FAB)           */}
+        {/* MOBILE NAVIGATION - DRAWER AND OVERLAY                                  */}
         {/* ======================================================================= */}
 
-        {/* FLOATING ACTION BUTTON (FAB) */}
-        <div className="fixed bottom-6 right-6 z-30 lg:hidden">
-          <Button
-            onClick={() => setIsMobileMenuOpen(true)}
-            size="icon"
-            className="h-14 w-14 rounded-full bg-amber-600 hover:bg-amber-700 shadow-lg"
-          >
-            <Menu className="h-6 w-6 text-white" />
-          </Button>
-        </div>
+        {/* --- CHANGE START: 3. FLOATING ACTION BUTTON (FAB) REMOVED --- */}
+        {/* The entire block for the floating button in the bottom-right corner     */}
+        {/* has been deleted from here. It was confusing for navigation.            */}
+        {/*
+          <div className="fixed bottom-6 right-6 z-30 lg:hidden">
+            <Button ... >
+              <Menu ... />
+            </Button>
+          </div>
+        */}
+        {/* --- CHANGE END: 3. FLOATING ACTION BUTTON (FAB) REMOVED --- */}
 
-        {/* DRAWER AND OVERLAY CONTAINER */}
+        {/* DRAWER AND OVERLAY CONTAINER (No changes here, it works as before) */}
         <div
           className={`fixed inset-0 z-40 lg:hidden ${
             isMobileMenuOpen ? "pointer-events-auto" : "pointer-events-none"
@@ -313,16 +371,15 @@ export default function DashboardLayout({
 
           {/* DRAWER with slide transition */}
           <div
-            className={`relative flex h-full w-64 flex-col bg-white p-6 pt-20 shadow-xl transition-transform duration-300 ease-in-out ${
+            className={`relative flex h-full w-64 flex-col bg-white p-6 shadow-xl transition-transform duration-300 ease-in-out ${
               isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
             }`}
           >
-            {/* 1. HEADER WITH TITLE AND THE NEW CLOSE ICON */}
+            {/* 1. HEADER WITH TITLE AND THE CLOSE ICON */}
             <div className="mb-10 flex items-center justify-between">
               <span className="text-2xl font-bold font-serif text-slate-900">
                 StoryNest
               </span>
-              {/* This is the new close button */}
               <Button
                 variant="ghost"
                 size="icon"

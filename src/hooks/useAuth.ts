@@ -11,6 +11,9 @@ export interface User {
   role: string;
   isVerified: boolean;
   avatarUrl?: string;
+  avatar?: string;
+  googleId?: string;
+  passwordExists?: boolean;
 }
 
 // The fetcher function for SWR. It uses our configured axios instance.
@@ -31,7 +34,6 @@ export default function useAuth() {
     shouldRetryOnError: false, // Don't retry on 401/403 errors
   });
   const isAuthenticated = !!user && !error;
-  console.log(user);
 
   const isLoading = swrIsLoading && !user && !error;
 
