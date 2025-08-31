@@ -30,7 +30,11 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {user?.role === "admin" ? <AdminDashboard /> : <UserDashboard />}
+      {user?.role === "admin" || "super-admin" ? (
+        <AdminDashboard />
+      ) : (
+        <UserDashboard />
+      )}
     </div>
   );
 }
