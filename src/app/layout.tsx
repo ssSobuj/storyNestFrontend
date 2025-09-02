@@ -32,6 +32,9 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        <link href="/favicon.png" rel="icon" />
+      </head>
       <body className={`${inter.variable} ${jetbrains_mono.variable}`}>
         <AuthProvider>
           <GoogleOAuthProvider clientId={googleClientId}>
