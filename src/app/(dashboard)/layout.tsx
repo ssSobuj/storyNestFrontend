@@ -48,6 +48,7 @@ export default function DashboardLayout({
   // Add links ONLY if the user is a SUPER-ADMIN
   if (user?.role === "super-admin") {
     navLinks.push({ name: "Super Admin", href: "/super-admin", icon: Shield });
+    navLinks.push({ name: "Categories", href: "/categories", icon: PenSquare });
   }
 
   // Close the mobile menu automatically when the user navigates

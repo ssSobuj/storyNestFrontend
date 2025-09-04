@@ -24,6 +24,7 @@ interface Story {
   author: { _id: string; username: string };
   status: "pending" | "approved" | "rejected";
   createdAt: string;
+  updatedAt: string;
 }
 
 export default function AdminDashboard() {
@@ -84,7 +85,7 @@ export default function AdminDashboard() {
         {storyList.map((story) => (
           <div
             key={story._id}
-            className="flex items-center justify-between gap-4 p-4 border rounded-lg bg-white"
+            className="flex items-center justify-between  flex-wrap gap-4 p-4 border rounded-lg bg-white"
           >
             <div>
               <Link
@@ -96,6 +97,24 @@ export default function AdminDashboard() {
               <p className="text-sm text-slate-500">
                 by {story.author.username}
               </p>
+              <p className="text-sm text-slate-500">
+  at:{" "}
+  {story.updatedAt
+    ? new Date(story.updatedAt).toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })
+    : new Date(story.createdAt).toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })}
+</p>
             </div>
             <div className="flex items-center space-x-2">
               {story.status === "pending" && (

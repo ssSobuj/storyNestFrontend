@@ -17,11 +17,13 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Upload, Save, Loader2, ArrowLeft } from "lucide-react";
+import { useSwrFetcher } from "@/hooks/useSwrFetcher";
 
 export default function EditStoryPage() {
   const router = useRouter();
   const params = useParams();
   const storyId = params.id;
+  const {data:categories,isLoading:categoriesLoading} = useSwrFetcher(`/api/v1/categories`);
 
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -231,33 +233,48 @@ export default function EditStoryPage() {
               <CardTitle>Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="category">Category *</Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value: any) =>
-                    handleInputChange("category", value)
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[
-                      "Fiction",
-                      "Non-Fiction",
-                      "Fantasy",
-                      "Sci-Fi",
-                      "Horror",
-                      "Romance",
-                    ].map((cat) => (
-                      <SelectItem key={cat} value={cat}>
-                        {cat}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div>
+                  <Label
+                    htmlFor="category"
+                    className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 block"
+                  >
+                    Category <span className="text-red-500">*</span>
+                  </Label>
+                  {categoriesLoading ? (
+                    <div className="flex items-center space-x-2">
+                      <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Loading categories...
+                      </span>
+                    </div>
+                  ) : categories?.data?.length === 0 ? (
+                    <p className="text-red-500 text-sm">
+                      No categories available. Please contact support.
+                    </p>
+                  ) : (
+                    <Select
+                      value={formData.category}
+                      onValueChange={(value) =>
+                        handleInputChange("category", value)
+                      }
+                    >
+                      <SelectTrigger className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg text-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 dark:bg-gray-700 dark:text-white">
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent className="dark:bg-gray-700 dark:text-white">
+                        {categories?.data?.map((category:{_id:string,name:string}) => (
+                          <SelectItem
+                            key={category._id}
+                            value={category._id}
+                            className="hover:bg-gray-100 dark:hover:bg-gray-600"
+                          >
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
               <div>
                 <Label>Tags</Label>
                 <div className="flex space-x-2">

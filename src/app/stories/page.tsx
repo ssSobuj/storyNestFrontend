@@ -35,6 +35,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce"; // A custom hook we'll create
+import { useSwrFetcher } from "@/hooks/useSwrFetcher";
 
 // Define the shape of a story from your API
 export interface Story {
@@ -44,7 +45,11 @@ export interface Story {
   author: { username: string };
   readingTime: number;
   avgRating: number;
-  category: string;
+  category: { 
+    _id: string;
+    name: string;
+    slug: string;
+  };
   coverImage: string;
   views: number;
   createdAt: string; // Add this line
@@ -62,6 +67,7 @@ export default function StoriesPage() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const {data:categories,isLoading:categoriesLoading} = useSwrFetcher(`/api/v1/categories`);
 
   // Component State
   const [stories, setStories] = useState<Story[]>([]);
@@ -195,28 +201,40 @@ export default function StoriesPage() {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            {[
-              "All",
-              "Fiction",
-              "Non-Fiction",
-              "Fantasy",
-              "Sci-Fi",
-              "Horror",
-              "Romance",
-            ].map((genre) => (
-              <Button
-                key={genre}
-                variant={filters.category === genre ? "default" : "outline"}
-                onClick={() => handleFilterChange("category", genre)}
-                className={
-                  filters.category === genre
-                    ? "bg-amber-600 hover:bg-amber-700"
-                    : ""
-                }
-              >
-                {genre}
-              </Button>
-            ))}
+          <Button
+    key="all"
+    variant={filters.category === "All" ? "default" : "outline"}
+    onClick={() => handleFilterChange("category", "All")}
+    className={
+      filters.category === "All"
+        ? "bg-amber-600 hover:bg-amber-700"
+        : ""
+    }
+  >
+    All
+  </Button>
+
+  {categoriesLoading ? (
+    <div className="flex items-center">
+      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+      <span>Loading categories...</span>
+    </div>
+  ) : (
+    categories?.data?.map((category:{_id:string,name:string}) => (
+      <Button
+        key={category._id}
+        variant={filters.category === category._id ? "default" : "outline"}
+        onClick={() => handleFilterChange("category", category._id)}
+        className={
+          filters.category === category._id
+            ? "bg-amber-600 hover:bg-amber-700"
+            : ""
+        }
+      >
+        {category.name}
+      </Button>
+    ))
+  )}
           </div>
         </div>
 
@@ -242,7 +260,7 @@ export default function StoriesPage() {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
-                      {story.category}
+                      {story.category?.name}
                     </span>
                     {story.avgRating > 0 && renderStars(story.avgRating)}
                   </div>

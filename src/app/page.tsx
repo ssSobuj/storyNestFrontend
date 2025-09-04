@@ -24,6 +24,7 @@ import api from "@/lib/api";
 import useAuth from "@/hooks/useAuth";
 import { useSwrFetcher } from "@/hooks/useSwrFetcher";
 
+
 const Home = () => {
   const { user } = useAuth();
   const { data } = useSwrFetcher(`/api/v1/stories?sort=top-rated`);
@@ -166,7 +167,7 @@ const Home = () => {
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-full">
-                      {story.category}
+                    {story.category?.name || "Uncategorized"}
                     </span>
                     {story.avgRating > 0 && renderStars(story.avgRating)}
                   </div>

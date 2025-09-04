@@ -306,6 +306,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Upload, Save, Loader2, XCircle } from "lucide-react";
+import { useSwrFetcher } from "@/hooks/useSwrFetcher";
 
 // Define the custom color for easier use
 const PRIMARY_COLOR = "#d97706"; // A deep orange/amber
@@ -313,7 +314,7 @@ const PRIMARY_COLOR = "#d97706"; // A deep orange/amber
 export default function WriteStoryPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-
+const {data:categories,isLoading:categoriesLoading} = useSwrFetcher(`/api/v1/categories`);
   const [coverImageFile, setCoverImageFile] = useState<File | null>(null);
 
   const [formData, setFormData] = useState({
@@ -540,54 +541,47 @@ export default function WriteStoryPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6 space-y-6">
-                <div>
+              <div>
                   <Label
                     htmlFor="category"
                     className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 block"
                   >
                     Category <span className="text-red-500">*</span>
                   </Label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(value) =>
-                      handleInputChange("category", value)
-                    }
-                  >
-                    <SelectTrigger className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg text-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 dark:bg-gray-700 dark:text-white">
-                      <SelectValue placeholder="Select a category" />
-                    </SelectTrigger>
-                    <SelectContent className="dark:bg-gray-700 dark:text-white">
-                      {[
-                        "Fiction",
-                        "Non-Fiction",
-                        "Fantasy",
-                        "Sci-Fi",
-                        "Horror",
-                        "Romance",
-                        "Thriller",
-                        "Mystery",
-                        "Adventure",
-                        "Biography",
-                        "Poetry",
-                        "Historical",
-                        "Young Adult",
-                        "Children's",
-                        "Self-Help",
-                        "Science",
-                        "Technology",
-                        "Art",
-                        "Culture",
-                      ].map((cat) => (
-                        <SelectItem
-                          key={cat}
-                          value={cat}
-                          className="hover:bg-gray-100 dark:hover:bg-gray-600"
-                        >
-                          {cat}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  {categoriesLoading ? (
+                    <div className="flex items-center space-x-2">
+                      <Loader2 className="h-5 w-5 animate-spin text-gray-500" />
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Loading categories...
+                      </span>
+                    </div>
+                  ) : categories?.data?.length === 0 ? (
+                    <p className="text-red-500 text-sm">
+                      No categories available. Please contact support.
+                    </p>
+                  ) : (
+                    <Select
+                      value={formData.category}
+                      onValueChange={(value) =>
+                        handleInputChange("category", value)
+                      }
+                    >
+                      <SelectTrigger className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg text-lg focus:ring-2 focus:ring-orange-400 focus:border-orange-400 dark:bg-gray-700 dark:text-white">
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent className="dark:bg-gray-700 dark:text-white">
+                        {categories?.data?.map((category:{_id:string,name:string}) => (
+                          <SelectItem
+                            key={category._id}
+                            value={category._id}
+                            className="hover:bg-gray-100 dark:hover:bg-gray-600"
+                          >
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
                 <div>
                   <Label className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 block">
