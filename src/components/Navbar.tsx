@@ -13,7 +13,6 @@ import useAuth from "@/hooks/useAuth";
 const Navbar = () => {
   // ==> 2. Use the context hook to get the shared auth state
   const { user, isLoading, logout } = useAuth();
-  console.log(user, isLoading);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();

@@ -21,7 +21,11 @@ export interface IStory {
   status: string;
   coverImage: string;
   readingTime: number;
-  category: string;
+  category: {
+    _id:string;
+    slug:string;
+    name:string;
+  };
   tags: string[];
   avgRating: number;
   views: number;

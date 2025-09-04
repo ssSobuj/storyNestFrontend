@@ -12,7 +12,7 @@ import StoryComments from "./StoryComments";
 
 export default function StoryDetail({ story }: { story: IStory }) {
   const [isBookmarked, setIsBookmarked] = useState(false);
-  console.log(story);
+console.log(story);
 
   // Robustly split paragraphs
   const contentParagraphs = story.content
@@ -43,7 +43,7 @@ export default function StoryDetail({ story }: { story: IStory }) {
         <div className="mb-8">
           <div className="flex items-center space-x-2 mb-4">
             <Badge className="bg-amber-100 text-amber-800">
-              {story.category}
+              {story.category.name}
             </Badge>
             {story.tags.map((tag) => (
               <Badge
